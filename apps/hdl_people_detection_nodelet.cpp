@@ -95,7 +95,7 @@ private:
       return;
     }
 
-    //iter++;  // frame counter.
+    iter++;  // frame counter.
     //std::cout<<iter<<"\n";
     pcl::PointCloud<PointT>::Ptr cloud(new pcl::PointCloud<PointT>());
     pcl::fromROSMsg(*points_msg, *cloud);  // Convert pcl2 to pcl
@@ -115,7 +115,16 @@ private:
     auto filtered = backsub->filter(cloud);  // preprocess
     auto clusters = detector->detect(filtered);  // cluster and classify
 
-    publish_msgs(points_msg->header.stamp, filtered, clusters);
+    auto markers = publish_msgs(points_msg->header.stamp, filtered, clusters);
+
+    for (const auto& marker : markers->markers){
+        if (marker.pose.position.x < 3 and marker.pose.position.x > 0){
+            true_positive++;
+            //std::cout<<"TP count: "<<true_positive<<"\n";
+            continue;
+        }
+    }
+    std::cout<<"TP count: "<<true_positive<<"\n";
   }
 
   /**
@@ -156,7 +165,7 @@ private:
     auto filtered = backsub->filter(cloud);
     auto clusters = detector->detect(filtered);
 
-    publish_msgs(points_msg->header.stamp, filtered, clusters);
+    auto markers = publish_msgs(points_msg->header.stamp, filtered, clusters);
   }
 
   void globalmap_callback(const sensor_msgs::PointCloud2ConstPtr& points_msg) {
@@ -185,7 +194,7 @@ private:
    * @param filtered
    * @param clusters
    */
-  void publish_msgs(
+  visualization_msgs::MarkerArrayConstPtr publish_msgs(
           const ros::Time& stamp,
           const pcl::PointCloud<pcl::PointXYZI>::Ptr& filtered,
           const std::vector<Cluster::Ptr>& clusters) const {
@@ -254,9 +263,13 @@ private:
       human_points_pub.publish(accum);
     }
 
-    if(detection_markers_pub.getNumSubscribers()) {
-      detection_markers_pub.publish(create_markers(stamp, clusters));
+    if(detection_markers_pub.getNumSubscribers()) {  // Marker publisher in Rviz
+        auto markers = create_markers(stamp, clusters);
+        detection_markers_pub.publish(markers);
+        return markers;
     }
+
+    return nullptr;
   }
 
   visualization_msgs::MarkerArrayConstPtr create_markers(const ros::Time& stamp, const std::vector<Cluster::Ptr>& clusters) const {
@@ -280,6 +293,13 @@ private:
       cluster_marker.pose.position.y = clusters[i]->centroid.y();
       cluster_marker.pose.position.z = clusters[i]->centroid.z();
       cluster_marker.pose.orientation.w = 1.0;
+      if (clusters[i]->centroid.x() > 0 and clusters[i]->centroid.x() < 3){
+          std::cout<<"True Positive"<<"\n";
+          std::cout<<"ns: "<<cluster_marker.ns<<" x: "<<clusters[i]->centroid.x()<<" y: "<<clusters[i]->centroid.y()<<"\n";
+      }
+      else{
+          // std::cout<<"ns: "<<cluster_marker.ns<<" x: "<<clusters[i]->centroid.x()<<" y: "<<clusters[i]->centroid.y()<<"\n";
+      }
 
       cluster_marker.color.r = 0.0;
       cluster_marker.color.g = 0.0;
@@ -292,12 +312,13 @@ private:
 
       markers->markers.push_back(cluster_marker);
     }
-
+    std::cout<<"_____frame: "<<iter<<"___________"<<"\n";
     return markers;
   }
 
 private:
     int iter = 0;
+    int true_positive = 0;
   // ROS
   ros::NodeHandle nh;
   ros::NodeHandle mt_nh;

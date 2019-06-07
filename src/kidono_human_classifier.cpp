@@ -36,7 +36,13 @@ bool KidonoHumanClassifier::predict(const pcl::PointCloud<pcl::PointXYZI>::Const
 
   KidonoFeatureExtractor extractor;
   auto feature = extractor.extract(cloud);
+  if (feature.empty()){
+      std::cout<<111<<"\n";
+  }
   auto scaled = scale.scaling(feature);
+  if (scaled.empty()){
+      std::cout<<222<<"\n";
+  }
 
   return boost->predict(scaled) > 0.0f;
 }

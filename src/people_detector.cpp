@@ -34,6 +34,7 @@ std::vector<Cluster::Ptr> PeopleDetector::detect(const pcl::PointCloud<pcl::Poin
   for(auto& cluster : clusters) {
     //std::cout<<!classifier<<"\n";
     cluster->is_human = !classifier || classifier->predict(cluster->cloud);
+    //std::cout<<cluster->is_human<<"\n";
   }
 
   return clusters;
