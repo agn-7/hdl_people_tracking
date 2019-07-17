@@ -9,6 +9,7 @@
 
   <node pkg="nodelet" type="nodelet" name="hdl_people_detection_nodelet" args="load hdl_people_tracking/HdlPeopleDetectionNodelet $(arg nodelet_manager)">
     <param name="static_sensor" value="false"/>
+    <param name="downsample_activation" value="true"/>
     <param name="downsample_resolution" value="0.1"/>
     <!-- back subtraction params -->
     <param name="backsub_resolution" value="0.2"/>
