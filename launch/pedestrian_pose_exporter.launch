@@ -1,0 +1,9 @@
+<launch>
+
+	<!-- export detected persons positions -->
+	<node name="hdl_people_tracking" pkg="hdl_people_tracking" type="pedestrian_pose_exporter.py" output="screen" clear_params="true">
+        <param name="path_to_save" value="$(find hdl_people_tracking)" />
+        <param name="marker_topic" value="/hdl_people_detection_nodelet/detection_markers" />
+    </node>
+
+</launch>
