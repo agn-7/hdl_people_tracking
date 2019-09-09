@@ -105,11 +105,14 @@ private:
     }
 
     // downsampling
-    pcl::PointCloud<PointT>::Ptr downsampled(new pcl::PointCloud<PointT>());
-    downsample_filter->setInputCloud(cloud);
-    downsample_filter->filter(*downsampled);
-    downsampled->header = cloud->header;
-    //cloud = downsampled;  // TODO :: aGn
+    if(private_nh.param<bool>("downsample_activation", true)) {
+        pcl::PointCloud<PointT>::Ptr downsampled(new pcl::PointCloud<PointT>());
+        downsample_filter->setInputCloud(cloud);
+        downsample_filter->filter(*downsampled);
+        downsampled->header = cloud->header;
+        cloud = downsampled;
+    }
+
 
     // background subtraction and people detection
     auto filtered = backsub->filter(cloud);  // preprocess
@@ -137,11 +140,13 @@ private:
     }
 
     // downsampling
-    pcl::PointCloud<PointT>::Ptr downsampled(new pcl::PointCloud<PointT>());
-    downsample_filter->setInputCloud(cloud);
-    downsample_filter->filter(*downsampled);
-    downsampled->header = cloud->header;
-    cloud = downsampled;  // TODO :: aGn
+    if(private_nh.param<bool>("downsample_activation", true)) {
+        pcl::PointCloud<PointT>::Ptr downsampled(new pcl::PointCloud<PointT>());
+        downsample_filter->setInputCloud(cloud);
+        downsample_filter->filter(*downsampled);
+        downsampled->header = cloud->header;
+        cloud = downsampled;
+    }
 
     // transform #cloud into the globalmap space
     const auto& position = odom_msg->pose.pose.position;
