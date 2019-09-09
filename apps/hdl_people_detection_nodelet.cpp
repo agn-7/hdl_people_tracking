@@ -121,7 +121,7 @@ private:
     auto markers = publish_msgs(points_msg->header.stamp, filtered, clusters);
 
     for (const auto& marker : markers->markers){
-        if (marker.pose.position.x < 3 and marker.pose.position.x > 0){
+        if (marker.pose.position.x < 13 and marker.pose.position.x > -4){
             true_positive++;
             //std::cout<<"TP count: "<<true_positive<<"\n";
             continue;
@@ -141,6 +141,7 @@ private:
       return;
     }
 
+    iter++;  // frame counter.
     pcl::PointCloud<PointT>::Ptr cloud(new pcl::PointCloud<PointT>());
     pcl::fromROSMsg(*points_msg, *cloud);
     if(cloud->empty()) {
@@ -171,6 +172,14 @@ private:
     auto clusters = detector->detect(filtered);
 
     auto markers = publish_msgs(points_msg->header.stamp, filtered, clusters);
+
+    for (const auto& marker : markers->markers){
+//      if (marker.pose.position.x < 13 and marker.pose.position.x > -4){
+          true_positive++;
+//      }
+    }
+    std::cout<<"TP count: "<<true_positive<<"\n";
+
   }
 
   void globalmap_callback(const sensor_msgs::PointCloud2ConstPtr& points_msg) {
@@ -298,13 +307,13 @@ private:
       cluster_marker.pose.position.y = clusters[i]->centroid.y();
       cluster_marker.pose.position.z = clusters[i]->centroid.z();
       cluster_marker.pose.orientation.w = 1.0;
-      if (clusters[i]->centroid.x() > 0 and clusters[i]->centroid.x() < 3){
+//      if (clusters[i]->centroid.x() > -4 and clusters[i]->centroid.x() < 13){
           std::cout<<"True Positive"<<"\n";
           std::cout<<"ns: "<<cluster_marker.ns<<" x: "<<clusters[i]->centroid.x()<<" y: "<<clusters[i]->centroid.y()<<"\n";
-      }
-      else{
+//      }
+//      else{
           // std::cout<<"ns: "<<cluster_marker.ns<<" x: "<<clusters[i]->centroid.x()<<" y: "<<clusters[i]->centroid.y()<<"\n";
-      }
+//      }
 
       cluster_marker.color.r = 0.0;
       cluster_marker.color.g = 0.0;
